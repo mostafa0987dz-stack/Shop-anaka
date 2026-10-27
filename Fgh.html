@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>متجر الأناقة | ثوب عربي فاخر - دشداشة بني</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+<style>
+* { font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
+body { background-color: #f8f9fa; color: #1a1a1a; overscroll-behavior-y: none; scroll-behavior: smooth; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #149116; border-radius: 10px; }
+.product-container { max-width: 1200px; margin: 0 auto; }
+.drag-container { cursor: grab; touch-action: pan-y; }
+.drag-container:active { cursor: grabbing; }
+.form-input {
+  width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.75rem;
+  padding: 0.75rem 1rem; font-size: 0.875rem; color: #111827;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.form-input::placeholder { color: #9ca3af; }
+.form-input:focus { border-color: #149116; box-shadow: 0 0 0 3px rgba(20,145,22,0.1); outline: none; }
+.form-select {
+  width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.75rem;
+  padding: 0.75rem 2rem 0.75rem 0.75rem; font-size: 0.875rem; color: #111827;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat; background-position: left 12px center; background-size: 16px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.form-select:focus { border-color: #149116; box-shadow: 0 0 0 3px rgba(20,145,22,0.1); outline: none; }
+.input-icon { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 1.125rem; }
+.input-icon-top { position: absolute; right: 0.75rem; top: 0.75rem; color: #9ca3af; font-size: 1.125rem; }
+.option-card { transition: all 0.3s; cursor: pointer; }
+.option-card.selected { border-color: #149116; background-color: rgba(20,145,22,0.04); box-shadow: 0 0 0 1px #149116; }
+.qty-btn { transition: all 0.2s; }
+.qty-btn:active { transform: scale(0.9); }
+.product-image-transition { transition: opacity 0.3s ease-in-out; }
+.thumb-active { border-color: #149116 !important; box-shadow: 0 0 0 2px rgba(20,145,22,0.2); }
+.star-filled { color: #deb40f; }
+.star-empty { color: #d1d5db; }
+.social-icon { width: 2.25rem; height: 2.25rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: all 0.3s; }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+.btn-shimmer { background: linear-gradient(90deg,#149116 0%,#1db320 25%,#149116 50%,#1db320 75%,#149116 100%); background-size: 200% 100%; animation: shimmer 3s infinite linear; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.hidden-page { display: none !important; }
+
+/* ==================== Dynamic Scroll Styles ==================== */
+#scrollProgress {
+  position: fixed; top: 0; left: 0; height: 3px;
+  background: linear-gradient(90deg, #149116, #1db320, #deb40f);
+  z-index: 9999; width: 0%;
+  transition: width 0.1s ease-out;
+  box-shadow: 0 0 10px rgba(20,145,22,0.4);
+}
+#mainHeader { transition: transform 0.35s ease, box-shadow 0.35s ease; }
+#mainHeader.header-hidden { transform: translateY(-100%); }
+#mainHeader.header-scrolled { box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+
+.reveal-on-scroll {
+  opacity: 0; transform: translateY(30px);
+  transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1),
+              transform 0.7s cubic-bezier(0.16,1,0.3,1);
+  will-change: opacity, transform;
+}
+.reveal-on-scroll.revealed { opacity: 1; transform: translateY(0); }
+.reveal-on-scroll.reveal-left { transform: translateX(-30px); }
+.reveal-on-scroll.reveal-left.revealed { transform: translateX(0); }
+.reveal-on-scroll.reveal-right { transform: translateX(30px); }
+.reveal-on-scroll.reveal-right.revealed { transform: translateX(0); }
+.reveal-on-scroll.reveal-scale { transform: scale(0.94); }
+.reveal-on-scroll.reveal-scale.revealed { transform: scale(1); }
+
+#stickyBar { transition: transform 0.35s ease, opacity 0.35s ease; }
+#stickyBar.bar-hidden { transform: translateY(120%); opacity: 0; }
+
+#backToTop {
+  position: fixed; bottom: 90px; left: 16px;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: #149116; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 20px rgba(20,145,22,0.35);
+  cursor: pointer; opacity: 0;
+  transform: scale(0.6) translateY(20px);
+  pointer-events: none;
+  transition: all 0.35s cubic-bezier(0.16,1,0.3,1);
+  z-index: 60;
+}
+#backToTop.visible { opacity: 1; transform: scale(1) translateY(0); pointer-events: auto; }
+#backToTop:hover { background: #0f6b11; transform: scale(1.08) translateY(-2px); }
+@media (min-width: 768px) { #backToTop { bottom: 24px; } }
+#mainProductImage { transition: transform 0.4s ease-out, opacity 0.3s ease-in-out; }
+
+/* حقل البلدية اليدوي */
+#manualCityWrapper {
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-height 0.4s ease, opacity 0.3s ease, margin 0.3s ease;
+  margin-top: 0;
+}
+#manualCityWrapper.open {
+  max-height: 120px; opacity: 1; margin-top: 0.5rem;
+}
+</style>
+</head>
+<body class="min-h-screen pb-24 md:pb-8">
+
+<!-- شريط تقدم القراءة -->
+<div id="scrollProgress"></div>
+
+<!-- Header -->
+<header id="mainHeader" class="bg-white border-b border-gray-100 sticky top-0 z-50">
+  <div class="product-container px-4 py-3 flex items-center justify-between">
+    <a href="#" onclick="showPage('product'); return false;" class="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-colors" aria-label="الرئيسية">
+      <iconify-icon icon="solar:home-2-linear" class="text-xl text-gray-700"></iconify-icon>
+    </a>
+    <div class="flex items-center gap-2">
+      <span class="text-lg font-bold text-gray-900">متجر الأناقة</span>
+      <span class="text-xs text-[#149116] font-semibold bg-green-50 px-2 py-0.5 rounded-full">جديد</span>
+    </div>
+    <a href="#" onclick="showPage('size'); return false;" class="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-colors" title="دليل المقاسات">
+      <iconify-icon icon="solar:ruler-linear" class="text-xl text-gray-700"></iconify-icon>
+    </a>
+  </div>
+</header>
+
+<!-- ============ PAGE 1: PRODUCT ============ -->
+<main id="page-product" class="product-container px-4 py-4 md:py-8">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12">
+    
+    <!-- Gallery -->
+    <div class="space-y-4 reveal-on-scroll reveal-left">
+      <div class="relative bg-gray-50 rounded-2xl overflow-hidden border border-gray-100">
+        <div class="absolute top-3 right-3 z-10 bg-black/60 backdrop-blur-md text-white text-[10px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1">
+          <iconify-icon icon="solar:refresh-circle-linear" class="text-sm"></iconify-icon>
+          اسحب للتدوير 360°
+        </div>
+        <div class="absolute top-3 left-3 z-10 bg-[#149116] text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">خصم 25%</div>
+        <div id="dragGallery" class="drag-container w-full aspect-square md:aspect-[4/4.5] flex items-center justify-center select-none relative overflow-hidden">
+          <img id="mainProductImage" src="" alt="ثوب عربي بني فاخر" class="w-full h-full object-cover product-image-transition pointer-events-none" draggable="false">
+          <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 text-[10px] text-gray-500 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full">
+            <iconify-icon icon="solar:drag-horizontal-linear" class="text-sm"></iconify-icon>
+            <span id="dragAngleDisplay">0°</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" id="thumbnailContainer"></div>
+
+      <div class="pt-2 space-y-3">
+        <div class="flex items-start justify-between gap-2">
+          <h1 class="text-xl md:text-2xl font-bold text-gray-900 leading-snug">ثوب عربي فاخر - دشداشة بني بقبة صينية</h1>
+          <button class="flex-shrink-0 w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center hover:bg-red-50 transition-colors group">
+            <iconify-icon icon="solar:heart-linear" class="text-xl text-gray-400 group-hover:text-red-500 transition-colors"></iconify-icon>
+          </button>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="flex items-center gap-0.5">
+            <iconify-icon icon="solar:star-bold" class="star-filled text-sm"></iconify-icon>
+            <iconify-icon icon="solar:star-bold" class="star-filled text-sm"></iconify-icon>
+            <iconify-icon icon="solar:star-bold" class="star-filled text-sm"></iconify-icon>
+            <iconify-icon icon="solar:star-bold" class="star-filled text-sm"></iconify-icon>
+            <iconify-icon icon="solar:star-bold" class="star-empty text-sm"></iconify-icon>
+          </div>
+          <span class="text-xs text-gray-500">4.0 (128 تقييم)</span>
+          <span class="text-xs text-[#149116] font-medium mr-auto">تم البيع 1,200+</span>
+        </div>
+        <div class="flex items-baseline gap-3">
+          <span class="text-2xl md:text-3xl font-extrabold text-[#149116]">6,500 <span class="text-sm font-semibold">دج</span></span>
+          <span class="text-sm text-gray-400 line-through">8,500 دج</span>
+          <span class="text-[10px] font-bold text-white bg-[#deb40f] px-2 py-0.5 rounded-full">وفّر 2,000 دج</span>
+        </div>
+
+        <div class="space-y-2 pt-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-gray-700">اللون: <span id="selectedColorLabel" class="text-[#149116]">بني</span></span>
+          </div>
+          <div class="flex gap-2.5">
+            <button onclick="selectColor(this,'بني')" class="color-swatch w-8 h-8 rounded-full border-2 border-[#149116] bg-[#6b4a2e] shadow-sm transition-all ring-2 ring-[#149116]/20"></button>
+            <button onclick="selectColor(this,'أسود')" class="color-swatch w-8 h-8 rounded-full border-2 border-gray-200 bg-gray-900 shadow-sm transition-all hover:border-gray-400"></button>
+            <button onclick="selectColor(this,'أبيض')" class="color-swatch w-8 h-8 rounded-full border-2 border-gray-200 bg-white shadow-sm transition-all hover:border-gray-400"></button>
+            <button onclick="selectColor(this,'بيج')" class="color-swatch w-8 h-8 rounded-full border-2 border-gray-200 bg-[#e8d5b7] shadow-sm transition-all hover:border-gray-400"></button>
+            <button onclick="selectColor(this,'رمادي')" class="color-swatch w-8 h-8 rounded-full border-2 border-gray-200 bg-gray-400 shadow-sm transition-all hover:border-gray-400"></button>
+          </div>
+        </div>
+
+        <div class="space-y-2 pt-1">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-gray-700">المقاس:</span>
+            <a href="#" onclick="showPage('size'); return false;" class="text-[10px] text-gray-400 hover:text-[#149116] underline underline-offset-2 transition-colors flex items-center gap-1">
+              <iconify-icon icon="solar:ruler-linear" class="text-sm"></iconify-icon>
+              دليل المقاسات
+            </a>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="selectSize(this)" class="size-btn px-3.5 py-1.5 text-xs font-semibold rounded-lg border-2 border-gray-200 text-gray-600 hover:border-gray-300 transition-all">S</button>
+            <button onclick="selectSize(this)" class="size-btn px-3.5 py-1.5 text-xs font-semibold rounded-lg border-2 border-gray-200 text-gray-600 hover:border-gray-300 transition-all">M</button>
+            <button onclick="selectSize(this)" class="size-btn px-3.5 py-1.5 text-xs font-semibold rounded-lg border-2 border-[#149116] text-[#149116] bg-green-50 transition-all">L</button>
+            <button onclick="selectSize(this)" class="size-btn px-3.5 py-1.5 text-xs font-semibold rounded-lg border-2 border-gray-200 text-gray-600 hover:border-gray-300 transition-all">XL</button>
+            <button onclick="selectSize(this)" class="size-btn px-3.5 py-1.5 text-xs font-semibold rounded-lg border-2 border-gray-200 text-gray-300 cursor-not-allowed relative" disabled>
+              XXL
+              <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-400 rounded-full border border-white"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Form -->
+    <div class="space-y-4 reveal-on-scroll reveal-right" style="transition-delay:0.1s;">
+      <div class="bg-white rounded-2xl border border-gray-100 p-4 md:p-6 shadow-sm">
+        <div class="flex items-center gap-2 mb-5">
+          <div class="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-[#149116]">
+            <iconify-icon icon="solar:clipboard-list-linear" class="text-lg"></iconify-icon>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-gray-900">معلومات الطلب</h2>
+            <p class="text-[10px] text-gray-400">الحقول المميزة بـ <span class="text-red-500 font-bold">*</span> إلزامية</p>
+          </div>
+        </div>
+
+        <form id="orderForm" onsubmit="handleOrder(event)" class="space-y-4">
+          <div>
+            <label class="text-xs font-semibold text-gray-700 block mb-1.5">الاسم الكامل <span class="text-red-500">*</span></label>
+            <div class="relative">
+              <iconify-icon icon="solar:user-linear" class="input-icon"></iconify-icon>
+              <input type="text" required placeholder="أدخل اسمك الكامل" class="form-input pr-10">
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-semibold text-gray-700 block mb-1.5">رقم الهاتف (جزائري) <span class="text-red-500">*</span></label>
+            <div class="relative">
+              <iconify-icon icon="solar:phone-linear" class="input-icon"></iconify-icon>
+              <input type="tel" required placeholder="05XXXXXXXX" maxlength="10" pattern="0[5-7][0-9]{8}" class="form-input pr-10">
+            </div>
+            <p class="text-[10px] text-gray-400 mt-1 mr-1">مثال: 0550123456</p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-semibold text-gray-700 block mb-1.5">الولاية <span class="text-red-500">*</span></label>
+              <select required id="wilayaSelect" onchange="updateCities()" class="form-select">
+                <option value="">اختر الولاية</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-gray-700 block mb-1.5">البلدية <span class="text-red-500">*</span></label>
+              <select required id="citySelect" onchange="handleCityChange()" class="form-select">
+                <option value="">اختر البلدية</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- حقل البلدية اليدوي (يظهر عند اختيار "بلديات أخرى") -->
+          <div id="manualCityWrapper">
+            <label class="text-xs font-semibold text-gray-700 block mb-1.5">اكتب اسم البلدية <span class="text-red-500">*</span></label>
+            <div class="relative">
+              <iconify-icon icon="solar:city-linear" class="input-icon"></iconify-icon>
+              <input type="text" id="manualCityInput" placeholder="اكتب اسم بلديتك هنا..." class="form-input pr-10">
+            </div>
+            <p class="text-[10px] text-gray-400 mt-1 mr-1">اكتب اسم البلدية بدقة لضمان توصيل الطلب</p>
+          </div>
+
+          <div>
+            <label class="text-xs font-semibold text-gray-700 block mb-1.5">العنوان الكامل <span class="text-red-500">*</span></label>
+            <div class="relative">
+              <iconify-icon icon="solar:map-point-linear" class="input-icon-top"></iconify-icon>
+              <textarea required rows="2" placeholder="الشارع، الحي، رقم المنزل..." class="form-input pr-10 resize-none"></textarea>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between bg-gray-50 rounded-xl p-2 border border-gray-200">
+            <span class="text-xs font-semibold text-gray-700 pr-2">الكمية</span>
+            <div class="flex items-center gap-3">
+              <button type="button" onclick="decrementQty()" class="qty-btn w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:border-[#149116] hover:text-[#149116] transition-all">
+                <iconify-icon icon="solar:minus-linear" class="text-base"></iconify-icon>
+              </button>
+              <span id="qtyDisplay" class="text-sm font-bold text-gray-900 w-6 text-center">1</span>
+              <button type="button" onclick="incrementQty()" class="qty-btn w-8 h-8 rounded-lg bg-[#149116] flex items-center justify-center text-white hover:bg-[#117a12] transition-all">
+                <iconify-icon icon="solar:add-linear" class="text-base"></iconify-icon>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-semibold text-gray-700 block mb-1.5">ملاحظات (اختياري)</label>
+            <textarea rows="2" placeholder="أي تفاصيل إضافية..." class="form-input resize-none"></textarea>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-xs font-semibold text-gray-700 block">طريقة التوصيل <span class="text-red-500">*</span></label>
+            <div class="grid grid-cols-2 gap-3">
+              <label class="option-card selected bg-white border-2 border-gray-200 rounded-xl p-3 flex items-start gap-3">
+                <input type="radio" name="delivery" value="home" checked class="mt-1 accent-[#149116]" onchange="selectDelivery(this)">
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <iconify-icon icon="solar:home-smile-linear" class="text-[#149116] text-base"></iconify-icon>
+                    <span class="text-xs font-bold text-gray-900">توصيل للمنزل</span>
+                  </div>
+                  <p class="text-[10px] text-gray-400 mt-0.5">500 دج - 2-4 أيام</p>
+                </div>
+              </label>
+              <label class="option-card bg-white border-2 border-gray-200 rounded-xl p-3 flex items-start gap-3">
+                <input type="radio" name="delivery" value="office" class="mt-1 accent-[#149116]" onchange="selectDelivery(this)">
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <iconify-icon icon="solar:buildings-2-linear" class="text-[#deb40f] text-base"></iconify-icon>
+                    <span class="text-xs font-bold text-gray-900">مكتب التوصيل</span>
+                  </div>
+                  <p class="text-[10px] text-gray-400 mt-0.5">300 دج - 3-5 أيام</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-xs font-semibold text-gray-700 block">طريقة الدفع <span class="text-red-500">*</span></label>
+            <div class="option-card selected bg-white border-2 border-gray-200 rounded-xl p-3 flex items-start gap-3">
+              <input type="radio" name="payment" value="cod" checked class="mt-1 accent-[#149116]">
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <iconify-icon icon="solar:wad-of-money-linear" class="text-[#149116] text-base"></iconify-icon>
+                  <span class="text-xs font-bold text-gray-900">الدفع عند الاستلام</span>
+                </div>
+                <p class="text-[10px] text-gray-400 mt-0.5">ادفع نقداً عند استلام طلبك</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 rounded-xl p-3 border border-gray-100 space-y-1.5">
+            <div class="flex justify-between text-xs text-gray-500">
+              <span>سعر المنتج × <span id="summaryQty">1</span></span>
+              <span id="summaryProductPrice">6,500 دج</span>
+            </div>
+            <div class="flex justify-between text-xs text-gray-500">
+              <span>التوصيل</span>
+              <span id="summaryDelivery">500 دج</span>
+            </div>
+            <div class="border-t border-gray-200 pt-1.5 flex justify-between">
+              <span class="text-xs font-bold text-gray-900">المجموع الكلي</span>
+              <span id="summaryTotal" class="text-sm font-extrabold text-[#149116]">7,000 دج</span>
+            </div>
+          </div>
+
+          <div class="pt-1">
+            <button type="submit" id="confirmBtn" class="btn-shimmer w-full text-white font-bold py-4 rounded-xl text-base shadow-lg shadow-green-600/20 hover:shadow-green-600/40 transition-all flex items-center justify-center gap-2">
+              <iconify-icon icon="solar:cart-check-linear" class="text-xl"></iconify-icon>
+              <span>اطلب الآن</span>
+            </button>
+            <p class="text-[10px] text-gray-400 text-center mt-2 leading-relaxed">
+              بتأكيدك للطلب، أنت توافق على <a href="#" class="text-[#149116] underline underline-offset-2">شروط الخدمة</a> و <a href="#" class="text-[#149116] underline underline-offset-2">سياسة الخصوصية</a>
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Social & Store Info -->
+  <div class="mt-8 md:mt-12 reveal-on-scroll">
+    <div class="bg-white rounded-2xl border border-gray-100 p-5 md:p-6 shadow-sm">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-5">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#149116] to-[#0f6b11] flex items-center justify-center shadow-lg shadow-green-600/20">
+            <iconify-icon icon="solar:shop-2-linear" class="text-2xl text-white"></iconify-icon>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-gray-900">متجر الأناقة</h3>
+            <a href="tel:+213550123456" class="text-xs text-gray-500 hover:text-[#149116] transition-colors flex items-center gap-1" dir="ltr">
+              <iconify-icon icon="solar:phone-linear" class="text-sm"></iconify-icon>
+              +213 550 123 456
+            </a>
+          </div>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <a href="#" class="social-icon bg-[#1877F2]/10 text-[#1877F2] hover:bg-[#1877F2] hover:text-white" title="فيسبوك">
+            <iconify-icon icon="ri:facebook-fill" class="text-lg"></iconify-icon>
+          </a>
+          <a href="#" class="social-icon bg-gradient-to-tr from-[#f09433] via-[#e6683c] to-[#dc2743] text-white hover:opacity-90" title="إنستغرام">
+            <iconify-icon icon="ri:instagram-fill" class="text-lg"></iconify-icon>
+          </a>
+          <a href="#" class="social-icon bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white" title="واتساب">
+            <iconify-icon icon="ri:whatsapp-fill" class="text-lg"></iconify-icon>
+          </a>
+          <a href="#" class="social-icon bg-black/5 text-gray-900 hover:bg-black hover:text-white" title="تيك توك">
+            <iconify-icon icon="ri:tiktok-fill" class="text-lg"></iconify-icon>
+          </a>
+          <a href="#" class="social-icon bg-gray-100 text-gray-500 hover:bg-gray-700 hover:text-white" title="البريد الإلكتروني">
+            <iconify-icon icon="solar:letter-linear" class="text-lg"></iconify-icon>
+          </a>
+        </div>
+        <a href="https://wa.me/213550123456" target="_blank" class="w-full md:w-auto bg-white border-2 border-[#149116] text-[#149116] hover:bg-[#149116] hover:text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-all flex items-center justify-center gap-2">
+          <iconify-icon icon="solar:chat-round-line-linear" class="text-lg"></iconify-icon>
+          تواصل معنا
+        </a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ============ PAGE 2: SIZE GUIDE ============ -->
+<main id="page-size" class="product-container px-4 py-6 md:py-10 hidden-page">
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 md:p-8 shadow-sm">
+    <div class="text-center mb-8">
+      <div class="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center mx-auto mb-4 text-[#149116]">
+        <iconify-icon icon="solar:ruler-linear" class="text-3xl"></iconify-icon>
+      </div>
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">دليل مقاسات الثوب</h1>
+      <p class="text-sm text-gray-500 max-w-md mx-auto">قِس نفسك بشريط قياس مرن، وقارن النتائج بالجدول أدناه لاختيار المقاس المناسب للثوب.</p>
+    </div>
+
+    <div class="bg-green-50/50 border border-green-100 rounded-xl p-4 mb-8">
+      <h2 class="text-sm font-bold text-[#149116] mb-3 flex items-center gap-2">
+        <iconify-icon icon="solar:info-circle-linear" class="text-lg"></iconify-icon>
+        كيفية القياس
+      </h2>
+      <ul class="space-y-2 text-xs text-gray-600">
+        <li class="flex items-start gap-2">
+          <span class="w-5 h-5 rounded-full bg-[#149116] text-white flex items-center justify-center text-[10px] font-bold shrink-0">1</span>
+          <span><strong>الطول:</strong> قِس من أعلى الكتف حتى أسفل الثوب المطلوب.</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="w-5 h-5 rounded-full bg-[#149116] text-white flex items-center justify-center text-[10px] font-bold shrink-0">2</span>
+          <span><strong>الصدر:</strong> قِس حول أوسع جزء من صدرك مع إبقاء الشريط أفقياً.</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="w-5 h-5 rounded-full bg-[#149116] text-white flex items-center justify-center text-[10px] font-bold shrink-0">3</span>
+          <span><strong>الأكتاف:</strong> قِس المسافة من الكتف إلى الكتف من الخلف.</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="overflow-x-auto rounded-xl border border-gray-200">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-[#149116] text-white">
+            <th class="py-3 px-4 text-right font-bold">المقاس</th>
+            <th class="py-3 px-4 text-center font-bold">الطول (سم)</th>
+            <th class="py-3 px-4 text-center font-bold">الصدر (سم)</th>
+            <th class="py-3 px-4 text-center font-bold">الأكتاف (سم)</th>
+            <th class="py-3 px-4 text-center font-bold">طول الكم (سم)</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <tr class="hover:bg-green-50/40 transition-colors">
+            <td class="py-3 px-4 font-bold text-gray-900">S</td>
+            <td class="py-3 px-4 text-center text-gray-700">140</td>
+            <td class="py-3 px-4 text-center text-gray-700">100</td>
+            <td class="py-3 px-4 text-center text-gray-700">44</td>
+            <td class="py-3 px-4 text-center text-gray-700">60</td>
+          </tr>
+          <tr class="hover:bg-green-50/40 transition-colors bg-gray-50/50">
+            <td class="py-3 px-4 font-bold text-gray-900">M</td>
+            <td class="py-3 px-4 text-center text-gray-700">145</td>
+            <td class="py-3 px-4 text-center text-gray-700">108</td>
+            <td class="py-3 px-4 text-center text-gray-700">46</td>
+            <td class="py-3 px-4 text-center text-gray-700">62</td>
+          </tr>
+          <tr class="hover:bg-green-50/40 transition-colors ring-2 ring-[#149116]/20">
+            <td class="py-3 px-4 font-bold text-[#149116]">L <span class="text-[10px] bg-green-50 px-1.5 py-0.5 rounded">الأكثر طلباً</span></td>
+            <td class="py-3 px-4 text-center text-gray-700">150</td>
+            <td class="py-3 px-4 text-center text-gray-700">116</td>
+            <td class="py-3 px-4 text-center text-gray-700">48</td>
+            <td class="py-3 px-4 text-center text-gray-700">64</td>
+          </tr>
+          <tr class="hover:bg-green-50/40 transition-colors">
+            <td class="py-3 px-4 font-bold text-gray-900">XL</td>
+            <td class="py-3 px-4 text-center text-gray-700">155</td>
+            <td class="py-3 px-4 text-center text-gray-700">124</td>
+            <td class="py-3 px-4 text-center text-gray-700">50</td>
+            <td class="py-3 px-4 text-center text-gray-700">66</td>
+          </tr>
+          <tr class="hover:bg-green-50/40 transition-colors bg-gray-50/50 opacity-60">
+            <td class="py-3 px-4 font-bold text-gray-400">XXL <span class="text-[10px] text-red-500">(نفذت)</span></td>
+            <td class="py-3 px-4 text-center text-gray-400">160</td>
+            <td class="py-3 px-4 text-center text-gray-400">132</td>
+            <td class="py-3 px-4 text-center text-gray-400">52</td>
+            <td class="py-3 px-4 text-center text-gray-400">68</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div class="bg-amber-50 border border-amber-100 rounded-xl p-4">
+        <div class="flex items-start gap-2">
+          <iconify-icon icon="solar:lightbulb-bolt-linear" class="text-[#deb40f] text-xl shrink-0 mt-0.5"></iconify-icon>
+          <p class="text-xs text-amber-900 leading-relaxed">إذا كنت بين مقاسين، اختر المقاس الأكبر للحصول على راحة أفضل.</p>
+        </div>
+      </div>
+      <div class="bg-blue-50 border border-blue-100 rounded-xl p-4">
+        <div class="flex items-start gap-2">
+          <iconify-icon icon="solar:refresh-circle-linear" class="text-blue-500 text-xl shrink-0 mt-0.5"></iconify-icon>
+          <p class="text-xs text-blue-900 leading-relaxed">يمكنك استبدال المقاس مجاناً خلال 30 يوماً من الاستلام.</p>
+        </div>
+      </div>
+    </div>
+
+    <a href="#" onclick="showPage('product'); return false;" class="mt-6 w-full bg-[#149116] hover:bg-[#117a12] text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-green-600/20">
+      <iconify-icon icon="solar:arrow-right-linear" class="text-lg"></iconify-icon>
+      العودة إلى المنتج
+    </a>
+  </div>
+</main>
+
+<!-- Bottom Sticky Bar (Mobile) -->
+<div id="stickyBar" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-3 md:hidden z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+  <div class="flex items-center gap-3">
+    <div class="flex-1">
+      <div class="flex items-baseline gap-1.5">
+        <span class="text-lg font-extrabold text-[#149116]">6,500</span>
+        <span class="text-[10px] text-gray-500">دج</span>
+        <span class="text-[10px] text-gray-300 line-through">8,500</span>
+      </div>
+    </div>
+    <button onclick="document.getElementById('confirmBtn').scrollIntoView({behavior:'smooth',block:'center'});" class="btn-shimmer text-white font-bold py-3 px-6 rounded-xl text-sm shadow-lg shadow-green-600/20 flex items-center gap-2">
+      <iconify-icon icon="solar:cart-check-linear" class="text-lg"></iconify-icon>
+      اطلب الآن
+    </button>
+  </div>
+</div>
+
+<!-- زر العودة للأعلى -->
+<button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'});" aria-label="العودة للأعلى">
+  <iconify-icon icon="solar:arrow-up-linear" class="text-xl"></iconify-icon>
+</button>
+
+<!-- Success Toast -->
+<div id="successToast" class="fixed top-20 left-1/2 -translate-x-1/2 bg-[#149116] text-white px-6 py-3 rounded-2xl shadow-2xl z-[100] transition-all duration-500 opacity-0 pointer-events-none flex items-center gap-3">
+  <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+    <iconify-icon icon="solar:check-circle-bold" class="text-xl"></iconify-icon>
+  </div>
+  <div>
+    <p class="text-sm font-bold">تم استلام طلبك بنجاح!</p>
+    <p class="text-[10px] text-white/80">سنتصل بك قريباً لتأكيد الطلب</p>
+  </div>
+</div>
+
+<script>
+/* ==================== بيانات الولايات (58 ولاية + بلديات مشهورة) ==================== */
+const wilayasData = {
+  "01": { name: "أدرار", cities: ["أدرار","تامست","شروين","رقان","إن زغمير","تسابيت","زاوية كنتة","أولاد أحمد تيمي","فنوغيل","تيميمون","أوقروت","دلدول","المطارفة","بودة","أولاد سعيد","قصر قدور","تامنطيط","تيت","طالمين","شرقاوة","سالي","أقبلي","تساوت","تينركوك","أولاد عيسى","زاوية دباغ"] },
+  "02": { name: "الشلف", cities: ["الشلف","تنس","بوقادير","وادي الفضة","الأبيض مجاجة","أولاد فارس","بني حواء","وادي سلي","الظهرة","بوزغاية","الكريمية","عين مران","أولاد عباس","الزبوجة","الحجاجرة","أولاد بن عبد القادر","الشطية","المصدق","بني راشد","الصبحة","سنجاس","تاوقريت"] },
+  "03": { name: "الأغواط", cities: ["الأغواط","أفلو","حاسي الرمل","قصر الحيران","عين ماضي","الغيشة","تاجموت","الحويطة","سيدي مخلوف","بريدة","حاسي الدلاعة","الخنق","تاويالة","بيضاء","الحمر","وادي مرة","تاجرونة","قلتة سيدي سعد","عين سيدي علي","سيدي بوزيد"] },
+  "04": { name: "أم البواقي", cities: ["أم البواقي","عين البيضاء","عين مليلة","سيقوس","مسكيانة","عين فكرون","عين الكرشة","بئر الشهداء","الجازية","سوق نعمان","عين كركار","البلالة","عين بابوش","أولاد حمزة","عين الديس","الفجوج","بحير الشرقي","الحرملية","الرحية","عين كرشة"] },
+  "05": { name: "باتنة", cities: ["باتنة","بريكة","عين التوتة","أريس","تازولت","بوزينة","مروانة","سريانة","عين جاسر","أولاد سلام","بومقر","الجزار","سفيان","إينوغيسن","معافة","الشمرة","تيمقاد","سقانة","تيغرغار","نقاوس","أولاد عوف","عين ياقوت","وادي الطاقة","الرحبات","فسديس","عين الكسر","تيلاطو","الحاسي","قصر بلزمة","بومية","أولاد فاضل","المعذر","لازرو","أولاد سي سليمان","تامزة"] },
+  "06": { name: "بجاية", cities: ["بجاية","أقبو","سيدي عيش","خراطة","أميزور","أوقاس","سوق الاثنين","تيزي نبربر","أدكار","سدوق","أمالو","تاسكريوت","أقفادو","تيفرة","بني جليل","سوق لاثنين","أيت مليك","القصر","أوزلاقن","تيشي","تيبان","سمعون","مشدا الله","تالة حمزة","تامقرة","سيدي أيوب","بني معوش","تينزبرت","درقينة","بني كسيلة"] },
+  "07": { name: "بسكرة", cities: ["بسكرة","أولاد جلال","طولقة","سيدي عقبة","زريبة الوادي","أوماش","القنطرة","شتمة","فوغالة","لوطاية","جمورة","مليلي","الوطاية","ليشانة","بوشقرون","سيدي خالد","الدوسن","الشعيبة","رأس الميعاد","أورلال","مشونش","برانيس","أولاد رحمة","أولاد ساسي","الحوش","الفيض","الزبر","عين الناقة"] },
+  "08": { name: "بشار", cities: ["بشار","القنادسة","العبادلة","بني ونيف","تاغيت","لحمر","موغل","بوكايس","مشرية","بني عباس","كرزاز","تامترت","أولاد خضير","الواتة","تبلبالة"] },
+  "09": { name: "البليدة", cities: ["البليدة","بوفاريك","الأربعاء","موزاية","بوقرة","سوما","أولاد يعيش","بني تامو","الشبلي","وادي العلايق","بني مراد","أولاد سلامة","الشفة","العفرون","مفتاح","الصومعة","بني خليل"] },
+  "10": { name: "البويرة", cities: ["البويرة","الأخضرية","سور الغزلان","عين بسام","مشدالة","بشلول","الحاشمية","الهاشمية","قادرية","الأصنام","حيزر","بئر غبالو","أولاد راشد","العش","الخبوزية","عين الترك","البرج"] },
+  "11": { name: "تمنراست", cities: ["تمنراست","عين أمقل","إدلس","تاظروك","أبلسة","إن غار","فقارة الزوى"] },
+  "12": { name: "تبسة", cities: ["تبسة","بئر العاتر","الشريعة","مرسط","العقلة","الونزة","بكارية","الحمامات","نقرين","الڨريقر","الماء الأبيض","الكويف","العوينات"] },
+  "13": { name: "تلمسان", cities: ["تلمسان","مغنية","الرمشي","الغزوات","بني بوسعيد","المنصورة","شتوان","أولاد ميمون","حنين","باب العسة","الفحول","سبدو","بني مستار","عين تالوت","العريشة","هنين","بني سنوس","تيانت","دار يغمراسن","سيدي الجيلالي","أولاد رياح","بني وارسوس"] },
+  "14": { name: "تيارت", cities: ["تيارت","السوقر","فرندة","قصر الشلالة","عين الذهب","مهدية","حمادية","دحموني","رحوية","تخمرت","مدروسة","تيدة","سبعين","عين الحديد","جبيلات الرصفاء","توسنينة","عين الكرمة","ملاكو","تاقدمت","الفجة","وادي ليلي","سيدي حسني","الناظورة","الشحيمة"] },
+  "15": { name: "تيزي وزو", cities: ["تيزي وزو","عزازقة","ذراع بن خدة","بوغني","تيقزيرت","ذراع الميزان","الأربعاء ناث إيراثن","عين الحمام","بني دوالة","مقلع","واسيف","عزفون","تيزي غنيف","تيرمتين","عين الزاوية","بني يني","بني زمنزر","بوزقن","إليلتن","أقبيل","فريحة","أيت يحيى موسى","مشطراس","بني عيسي","واقنون","أزفون","تيزي نثلاثة","أقرو"] },
+  "16": { name: "الجزائر", cities: ["باب الوادي","حسين داي","الحراش","بئر مراد رايس","الدار البيضاء","باب الزوار","الرويبة","زرالدة","شراقة","عين البنيان","بئر خادم","بئر توتة","الدرارية","بوزريعة","بني مسوس","برج الكيفان","برج البحري","الرغاية","براقي","سيدي امحمد","المدنية","الجزائر الوسطى","القبة","دالي إبراهيم","بن عكنون","الحمامات","عين طاية","المحمدية","بابا حسن","سيدي موسى","وادي السمار","باش جراح","بوروبة","العاشور"] },
+  "17": { name: "الجلفة", cities: ["الجلفة","عين وسارة","مسعد","حاسي بحبح","الإدريسية","دار الشيوخ","الشارف","بيرين","بويرة الأحداب","حد الصحاري","عين الإبل","سيدي لعجال","الخميس","حاسي العش","سيدي بايزيد","دويس","القطارة","زكار","بن يعقوب"] },
+  "18": { name: "جيجل", cities: ["جيجل","الطاهير","الميلية","العنصر","سيدي معروف","الشقفة","العوانة","زيامة منصورية","الأمير عبد القادر","تاكسنة","سيدي عبد العزيز","الشحنة","سلمى بن زيادة","أولاد يحيى خدروش","بني ياجيس"] },
+  "19": { name: "سطيف", cities: ["سطيف","العلمة","عين ولمان","بوقاعة","عين الكبيرة","عين أرنات","بابور","عين آزال","جميلة","بني عزيز","بئر العرش","صالح باي","بني ورثيلان","بني فودة","بئر حدادة","عين لقراج","الدهامشة","قجال","أولاد صابر","عين الروى","بوسلام","الرصفة"] },
+  "20": { name: "سعيدة", cities: ["سعيدة","عين الحجر","الحساسنة","أولاد خالد","يوب","سيدي بوبكر","أولاد إبراهيم","سيدي أحمد","عين السخونة","دوي ثابت","تيرسين","هونت","سيدي عمر","مولاي العربي"] },
+  "21": { name: "سكيكدة", cities: ["سكيكدة","عزابة","القل","تمالوس","رمضان جمال","بن عزوز","الحروش","أم الطوب","الشرايع","سيدي مزغيش","عين شرشار","فلفلة","الزيتونة","بوشطاطة","الكركرة","وادي الزهور","بني زيد","أولاد حبابة","السبت"] },
+  "22": { name: "سيدي بلعباس", cities: ["سيدي بلعباس","تلاغ","سفيزف","عين البرد","مرحوم","بن باديس","سيدي لحسن","عين تندمين","تسالة","المصطفى بن ابراهيم","رأس الماء","بوجبهة البرج","سيدي علي بن يوب","تاودموت","مولاي سليسن","بلعربي","حاسي زهانة","تغاليمت"] },
+  "23": { name: "عنابة", cities: ["عنابة","الحجار","سرايدي","برحال","البوني","سيدي عمار","شطايبي","عين الباردة","التريعات","وادي العنب"] },
+  "24": { name: "قالمة", cities: ["قالمة","وادي الزناتي","بوشقوف","حمام دباغ","عين مخلوف","هيليوبوليس","بومهرة أحمد","حمام النبايل","عين العربي","قلعة بوصبع","جعفرة","خزارة","بن جراح","حمام المسخوطين","تاملوكة","الدهوارة","سلاوة عنونة","وادي فراغة"] },
+  "25": { name: "قسنطينة", cities: ["قسنطينة","الخروب","حامة بوزيان","زيغود يوسف","ديدوش مراد","عين عبيد","ابن باديس","ابن زياد","مسعود بوجريو","بني حميدان","أولاد رحمون"] },
+  "26": { name: "المدية", cities: ["المدية","البرواقية","قصر البخاري","عزيز","عين بوسيف","العمارية","تابلاط","سيدي نعمان","الشهبونية","سي المحجوب","وزرة","شلالة العذاورة","عين القصير","سغوان","مفتاح","بعطة","الحمدانية","أولاد عنتر","الكاف الأخضر","أولاد بوعشرة","بني سليمان","سيدي دامد"] },
+  "27": { name: "مستغانم", cities: ["مستغانم","عين تادلس","سيدي علي","ماسرة","حاسي ماماش","مزغران","بوقيراط","حجاج","سيدي لخضر","خير الدين","الصور","سيدي بلعطار","منصورة","طوايرية","أولاد مع الله","صيادة","تزقايت","سيدي عبد الله"] },
+  "28": { name: "المسيلة", cities: ["المسيلة","بوسعادة","سيدي عيسى","حمام الضلعة","عين الملح","مقرة","أولاد دراج","شلال العذاورة","مسيف","خبانة","بن سرور","جبل مساعد","أولاد ماضي","برهوم","مجدل","سيدي هجرس","تارمونت","بلعايبة","أولاد عطية","المعاضيد"] },
+  "29": { name: "معسكر", cities: ["معسكر","سيق","محمدية","غريس","تيغنيف","برج بوعريرج","زمالة الأمير عبد القادر","عين فارس","وادي التاغية","بوحنيفية","تيزي","فروحة","المامونية","حسيان","سيدي بوسعيد","العلايمية","المطمور","ماوسة","سيدي عبد الجبار","القرط"] },
+  "30": { name: "ورقلة", cities: ["ورقلة","حاسي مسعود","تقرت","الرويسات","النقوسة","البرمة","عين البيضاء","ن زق","العالية","سيدي خويلد","الزاوية العابدية","تبسبست","انقول","بلدة عمر","تماسين","المقارين"] },
+  "31": { name: "وهران", cities: ["وهران","بئر الجير","السانية","أرزيو","بطيوة","عين الترك","مرسى الكبير","وادي تليلات","مسرغين","بوتليليس","الكرمة","حاسي بونيف","العنصر","سيدي الشحمي","قديل","حاسي مفسوخ"] },
+  "32": { name: "البيض", cities: ["البيض","بوقطب","الأبيض سيدي الشيخ","رقاصة","بريزينة","الغاسول","استيتن","الشلالة","الخيثر","كراكدة","عين العراك","العڨبان","الشقيق","المحرة","توسمولين","أولاد إبراهيم","سيدي عمر","سيدي سليمان","بوسمغون"] },
+  "33": { name: "إليزي", cities: ["إليزي","برج عمر إدريس","إن أمناس","دبداب","برج الحواس","جانت"] },
+  "34": { name: "برج بوعريريج", cities: ["برج بوعريريج","رأس الوادي","المنصورة","بئر قاصد علي","الحمادية","مجانة","العش","خليل","جحيفة","أولاد براهم","العناصر","تفرق","حرازة","الجعافر","سيدي أمبارك"] },
+  "35": { name: "بومرداس", cities: ["بومرداس","برج منايل","الثنية","دلس","خميس الخشنة","بودواو","الأربعاء","الناصرية","شعبة العامر","أولاد موسى","يسر","زعترية","أعفير","بغلية","سيدي داود","بني عمران","الخروبة"] },
+  "36": { name: "الطارف", cities: ["الطارف","القالة","بوثلجة","بن مهيدي","الذرعان","الشط","البسباس","عين العسل","الزيتونة","بوحجار","الشرفة","الحجار"] },
+  "37": { name: "تندوف", cities: ["تندوف","أم العسل"] },
+  "38": { name: "تيسمسيلت", cities: ["تيسمسيلت","ثنية الأحد","برج بونعامة","خميستي","لرجام","بوقايد","الأزهرية","العيون","ملعب","العماري","الاربعاء","سيدي سليمان","بني شعيب","سيدي عابد","بني لحسن","لعيون"] },
+  "39": { name: "الوادي", cities: ["الوادي","الرباح","قمار","الدبيلة","حساني عبد الكريم","الطالب العربي","المغير","جامعة","سيدي عمران","أم الطيور","حاسي خليفة","العقلة","الرقيبة","وادي العلندة","النخلة","كوينين","دوار الماء"] },
+  "40": { name: "خنشلة", cities: ["خنشلة","ششار","بابار","قايس","الحامة","أنسيغة","بغاي","الرميلة","المحمل","تاوزيانت","طامزة","بومقر","عين الطويلة"] },
+  "41": { name: "سوق أهراس", cities: ["سوق أهراس","سدراتة","مداوروش","تاورة","الحنانشة","المشروحة","أم العظائم","بئر بوحوش","الحدادة","سيدي فرج","الزعرورية","الخضارة","أولاد مؤمن"] },
+  "42": { name: "تيبازة", cities: ["تيبازة","القليعة","حجوط","شرشال","دواودة","بوسماعيل","فوكة","سيدي عمار","الداموس","القلعة","الاربعطاش","مناصر","أحمر العين","سيدي راشد"] },
+  "43": { name: "ميلة", cities: ["ميلة","شلغوم العيد","فرجيوة","القرارم قوقة","تاجنانت","وادي العثمانية","التلاغمة","عين البيضاء","الرواشد","تسدان حدادة","الشيقارة","سيدي مروان","وادي النجاء","عين الملوك","بوحاتم","ترعي باينان"] },
+  "44": { name: "عين الدفلى", cities: ["عين الدفلى","خميس مليانة","مليانة","العطاف","بومدفع","حمام ريغة","جليدة","الأربعاء","الروينة","العامرة","الأبيض مجاجة","بئر ولد خليفة","جندل","الماين","الأميرية","العبادية"] },
+  "45": { name: "النعامة", cities: ["النعامة","مشرية","عين الصفراء","صفيصيفة","مكمن بن عمار","تيوت","جنين بورزق","مغرار","عسلة","سفيسيفة"] },
+  "46": { name: "عين تموشنت", cities: ["عين تموشنت","حمام بوحجر","بني صاف","المالح","العامرية","السانيا","شعبة اللحم","أولاد الكيحل","حاسي الغلة","الشعبة","الأمير عبد القادر","أولاد بوجمعة","سيدي بن عدة","شنتوف"] },
+  "47": { name: "غرداية", cities: ["غرداية","متليلي","بريان","القرارة","زلفانة","بونورة","العطف","ضاية بن ضحوة","سبseb","المنصورة"] },
+  "48": { name: "غليزان", cities: ["غليزان","وادي رهيو","مازونة","عمي موسى","زمورة","حمري","جديوية","سيدي محمد بن علي","عين طارق","المطمر","سيدي خطاب","القلعة","يلل","بني زنطيس","وادي الجمعة","سيدي محمد بن عودة","الرمكة","مرجة سيدي عابد","عين الرحمة"] },
+  "49": { name: "تيميمون", cities: ["تيميمون","أولاد سعيد","شروين","أوقروت","دلدول","قصر قدور","طالمين","المطارفة","تامست","تينركوك","أولاد عيسى","تسابيت"] },
+  "50": { name: "برج باجي مختار", cities: ["برج باجي مختار","تيمياوين"] },
+  "51": { name: "أولاد جلال", cities: ["أولاد جلال","سيدي خالد","الدوسن","الشعيبة","رأس الميعاد","أولاد رحمة"] },
+  "52": { name: "بني عباس", cities: ["بني عباس","أولاد خضير","تامترت","الواتة","تبلبالة","كرزاز","القنادسة"] },
+  "53": { name: "عين صالح", cities: ["عين صالح","فقارة الزوى","إن غار"] },
+  "54": { name: "عين قزام", cities: ["عين قزام","تين زواتين"] },
+  "55": { name: "تقرت", cities: ["تقرت","تماسين","المقارين","بلدة أعمر","الزاوية العابدية","النزلة","سيدي سليمان","الحجيرة"] },
+  "56": { name: "جانت", cities: ["جانت","برج الحواس"] },
+  "57": { name: "المغير", cities: ["المغير","جامعة","سيدي عمران","أم الطيور","سطيل","تندلة","الحجيرة"] },
+  "58": { name: "المنيعة", cities: ["المنيعة","حاسي الفحل","وادي النيل"] }
+};
+
+/* ==================== صور المنتج (استبدلها بصورك) ==================== */
+const productImages = [
+  "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?q=80&w=800&auto=format&fit=crop&sat=-100",
+  "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?q=80&w=800&auto=format&fit=crop&hue-rotate=180",
+  "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?q=80&w=800&auto=format&fit=crop&sat=50"
+];
+const productThumbnails = [
+  "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?q=80&w=200&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?q=80&w=200&auto=format&fit=crop&sat=-100",
+  "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?q=80&w=200&auto=format&fit=crop&hue-rotate=180",
+  "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?q=80&w=200&auto=format&fit=crop&sat=50"
+];
+
+const productConfig = { basePrice: 6500, oldPrice: 8500, homeDelivery: 500, officeDelivery: 300 };
+const OTHER_CITIES_VALUE = "__other__";
+
+/* ==================== State ==================== */
+let currentQty = 1;
+let currentRotation = 0;
+let currentImageIndex = 0;
+let deliveryPrice = productConfig.homeDelivery;
+
+/* ==================== Page Switcher ==================== */
+function showPage(page) {
+  document.getElementById('page-product').classList.toggle('hidden-page', page !== 'product');
+  document.getElementById('page-size').classList.toggle('hidden-page', page !== 'size');
+  document.getElementById('stickyBar').style.display = page === 'product' ? '' : 'none';
+  document.getElementById('stickyBar').classList.remove('bar-hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  setTimeout(() => {
+    const targetPage = page === 'product'
+      ? document.getElementById('page-product')
+      : document.getElementById('page-size');
+    targetPage.querySelectorAll('.reveal-on-scroll').forEach(el => el.classList.remove('revealed'));
+    setTimeout(() => {
+      targetPage.querySelectorAll('.reveal-on-scroll').forEach(el => el.classList.add('revealed'));
+    }, 50);
+  }, 100);
+}
+
+/* ==================== Wilayas ==================== */
+function populateWilayas() {
+  const select = document.getElementById('wilayaSelect');
+  if (!select) return;
+  Object.entries(wilayasData).forEach(([code, data]) => {
+    const option = document.createElement('option');
+    option.value = code;
+    option.textContent = `${code} - ${data.name}`;
+    select.appendChild(option);
+  });
+}
+
+function updateCities() {
+  const wilayaCode = document.getElementById('wilayaSelect').value;
+  const citySelect = document.getElementById('citySelect');
+  const manualWrapper = document.getElementById('manualCityWrapper');
+  const manualInput = document.getElementById('manualCityInput');
+
+  citySelect.innerHTML = '<option value="">اختر البلدية</option>';
+  manualWrapper.classList.remove('open');
+  if (manualInput) { manualInput.required = false; manualInput.value = ''; }
+
+  if (wilayaCode && wilayasData[wilayaCode]) {
+    wilayasData[wilayaCode].cities.forEach(city => {
+      const option = document.createElement('option');
+      option.value = city;
+      option.textContent = city;
+      citySelect.appendChild(option);
+    });
+    // إضافة خيار "بلديات أخرى"
+    const otherOption = document.createElement('option');
+    otherOption.value = OTHER_CITIES_VALUE;
+    otherOption.textContent = "🏙️ بلديات أخرى (اكتب يدوياً)";
+    otherOption.style.fontWeight = 'bold';
+    otherOption.style.color = '#149116';
+    citySelect.appendChild(otherOption);
+
+    citySelect.disabled = false;
+  } else {
+    citySelect.disabled = true;
+  }
+}
+
+function handleCityChange() {
+  const citySelect = document.getElementById('citySelect');
+  const manualWrapper = document.getElementById('manualCityWrapper');
+  const manualInput = document.getElementById('manualCityInput');
+
+  if (citySelect.value === OTHER_CITIES_VALUE) {
+    manualWrapper.classList.add('open');
+    manualInput.required = true;
+    setTimeout(() => manualInput.focus(), 300);
+  } else {
+    manualWrapper.classList.remove('open');
+    manualInput.required = false;
+    manualInput.value = '';
+  }
+}
+
+/* ==================== Gallery ==================== */
+function buildGallery() {
+  const mainImage = document.getElementById('mainProductImage');
+  const thumbContainer = document.getElementById('thumbnailContainer');
+  if (!mainImage || !thumbContainer) return;
+  mainImage.src = productImages[0];
+  thumbContainer.innerHTML = '';
+  productImages.forEach((img, index) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 border-transparent transition-all hover:opacity-80 ${index === 0 ? 'thumb-active' : ''}`;
+    btn.onclick = () => changeImage(btn, index);
+    const thumb = document.createElement('img');
+    thumb.src = productThumbnails[index] || img;
+    thumb.alt = `زاوية ${index + 1}`;
+    thumb.className = 'w-full h-full object-cover';
+    btn.appendChild(thumb);
+    thumbContainer.appendChild(btn);
+  });
+}
+
+function changeImage(btn, index) {
+  const mainImage = document.getElementById('mainProductImage');
+  const angleDisplay = document.getElementById('dragAngleDisplay');
+  document.querySelectorAll('#thumbnailContainer button').forEach(el => el.classList.remove('thumb-active'));
+  btn.classList.add('thumb-active');
+  mainImage.style.opacity = '0.5';
+  setTimeout(() => {
+    mainImage.src = productImages[index];
+    mainImage.style.opacity = '1';
+  }, 150);
+  currentImageIndex = index;
+  currentRotation = index * 90;
+  if (angleDisplay) angleDisplay.textContent = `${currentRotation}°`;
+}
+
+/* ==================== 360° Drag ==================== */
+function initDragGallery() {
+  const dragGallery = document.getElementById('dragGallery');
+  const mainImage = document.getElementById('mainProductImage');
+  const angleDisplay = document.getElementById('dragAngleDisplay');
+  if (!dragGallery || !mainImage) return;
+  let isDragging = false, startX = 0, startIndex = 0;
+  const start = (x) => { isDragging = true; startX = x; startIndex = currentImageIndex; dragGallery.style.cursor = 'grabbing'; };
+  const move = (x) => {
+    if (!isDragging) return;
+    const deltaX = x - startX;
+    const step = 50;
+    const newIndex = ((startIndex + Math.round(deltaX / step)) % productImages.length + productImages.length) % productImages.length;
+    if (newIndex !== currentImageIndex) {
+      currentImageIndex = newIndex;
+      mainImage.style.opacity = '0.5';
+      setTimeout(() => { mainImage.src = productImages[currentImageIndex]; mainImage.style.opacity = '1'; }, 150);
+      const thumbs = document.querySelectorAll('#thumbnailContainer button');
+      thumbs.forEach(el => el.classList.remove('thumb-active'));
+      if (thumbs[currentImageIndex]) thumbs[currentImageIndex].classList.add('thumb-active');
+      currentRotation = currentImageIndex * 90;
+      if (angleDisplay) angleDisplay.textContent = `${currentRotation}°`;
+    }
+  };
+  const end = () => { isDragging = false; dragGallery.style.cursor = 'grab'; };
+  dragGallery.addEventListener('mousedown', (e) => start(e.clientX));
+  window.addEventListener('mousemove', (e) => move(e.clientX));
+  window.addEventListener('mouseup', end);
+  dragGallery.addEventListener('touchstart', (e) => start(e.touches[0].clientX), { passive: true });
+  window.addEventListener('touchmove', (e) => move(e.touches[0].clientX), { passive: true });
+  window.addEventListener('touchend', end);
+}
+
+/* ==================== Colors & Sizes ==================== */
+function selectColor(btn, colorName) {
+  document.querySelectorAll('.color-swatch').forEach(el => {
+    el.classList.remove('border-[#149116]', 'ring-2', 'ring-[#149116]/20');
+    el.classList.add('border-gray-200');
+  });
+  btn.classList.remove('border-gray-200');
+  btn.classList.add('border-[#149116]', 'ring-2', 'ring-[#149116]/20');
+  document.getElementById('selectedColorLabel').textContent = colorName;
+}
+
+function selectSize(btn) {
+  if (btn.disabled) return;
+  document.querySelectorAll('.size-btn').forEach(el => {
+    el.classList.remove('border-[#149116]', 'text-[#149116]', 'bg-green-50');
+    el.classList.add('border-gray-200', 'text-gray-600');
+  });
+  btn.classList.remove('border-gray-200', 'text-gray-600');
+  btn.classList.add('border-[#149116]', 'text-[#149116]', 'bg-green-50');
+}
+
+/* ==================== Quantity ==================== */
+function incrementQty() { currentQty++; updateQtyDisplay(); }
+function decrementQty() { if (currentQty > 1) { currentQty--; updateQtyDisplay(); } }
+function updateQtyDisplay() {
+  document.getElementById('qtyDisplay').textContent = currentQty;
+  document.getElementById('summaryQty').textContent = currentQty;
+  updateSummary();
+}
+
+/* ==================== Delivery ==================== */
+function selectDelivery(radio) {
+  document.querySelectorAll('input[name="delivery"]').forEach(el => el.closest('.option-card').classList.remove('selected'));
+  radio.closest('.option-card').classList.add('selected');
+  deliveryPrice = radio.value === 'home' ? productConfig.homeDelivery : productConfig.officeDelivery;
+  updateSummary();
+}
+
+/* ==================== عداد متحرك للأسعار ==================== */
+function animateNumber(el, from, to, duration = 400, suffix = ' دج') {
+  const start = performance.now();
+  const step = (now) => {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = Math.round(from + (to - from) * eased);
+    el.textContent = current.toLocaleString() + suffix;
+    if (progress < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+/* ==================== Summary ==================== */
+function updateSummary() {
+  const productTotal = productConfig.basePrice * currentQty;
+  const total = productTotal + deliveryPrice;
+
+  const productEl = document.getElementById('summaryProductPrice');
+  const deliveryEl = document.getElementById('summaryDelivery');
+  const totalEl = document.getElementById('summaryTotal');
+
+  const oldProduct = parseInt(productEl.textContent.replace(/[^\d]/g,'')) || 0;
+  const oldTotal = parseInt(totalEl.textContent.replace(/[^\d]/g,'')) || 0;
+
+  animateNumber(productEl, oldProduct, productTotal);
+  animateNumber(totalEl, oldTotal, total);
+  deliveryEl.textContent = `${deliveryPrice.toLocaleString()} دج`;
+}
+
+/* ==================== Order ==================== */
+function handleOrder(e) {
+  e.preventDefault();
+
+  const citySelect = document.getElementById('citySelect');
+  const manualInput = document.getElementById('manualCityInput');
+  if (citySelect.value === OTHER_CITIES_VALUE && !manualInput.value.trim()) {
+    manualInput.focus();
+    manualInput.classList.add('border-red-400');
+    return;
+  }
+  manualInput.classList.remove('border-red-400');
+
+  const btn = document.getElementById('confirmBtn');
+  const originalContent = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<iconify-icon icon="solar:refresh-circle-linear" class="text-xl animate-spin"></iconify-icon><span>جارٍ المعالجة...</span>';
+  btn.classList.remove('btn-shimmer');
+  btn.classList.add('bg-[#149116]', 'opacity-80');
+
+  setTimeout(() => {
+    btn.innerHTML = '<iconify-icon icon="solar:check-circle-bold" class="text-xl"></iconify-icon><span>تم تأكيد الطلب!</span>';
+    btn.classList.remove('opacity-80');
+    btn.classList.add('bg-[#0f6b11]');
+    const toast = document.getElementById('successToast');
+    toast.classList.remove('opacity-0', 'pointer-events-none');
+    toast.classList.add('opacity-100');
+
+    e.target.reset();
+    currentQty = 1;
+    updateQtyDisplay();
+    document.querySelectorAll('input[name="delivery"]')[0].checked = true;
+    document.querySelectorAll('.option-card').forEach((el, i) => {
+      if (i === 0) el.classList.add('selected'); else el.classList.remove('selected');
+    });
+    deliveryPrice = productConfig.homeDelivery;
+    updateSummary();
+    document.getElementById('manualCityWrapper').classList.remove('open');
+
+    setTimeout(() => {
+      btn.innerHTML = originalContent;
+      btn.disabled = false;
+      btn.classList.remove('bg-[#0f6b11]', 'bg-[#149116]');
+      btn.classList.add('btn-shimmer');
+      toast.classList.remove('opacity-100');
+      toast.classList.add('opacity-0', 'pointer-events-none');
+    }, 3500);
+  }, 2000);
+}
+
+/* ==================== Dynamic Scroll ==================== */
+function initDynamicScroll() {
+  const progressBar = document.getElementById('scrollProgress');
+  const header = document.getElementById('mainHeader');
+  const stickyBar = document.getElementById('stickyBar');
+  const backToTop = document.getElementById('backToTop');
+  const mainImage = document.getElementById('mainProductImage');
+
+  let lastScrollY = 0, ticking = false, headerHidden = false;
+
+  function updateScrollUI() {
+    const scrollY = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const percent = docHeight > 0 ? (scrollY / docHeight) * 100 : 0;
+    if (progressBar) progressBar.style.width = percent + '%';
+
+    if (header) {
+      if (scrollY > 120 && scrollY > lastScrollY) {
+        if (!headerHidden) { header.classList.add('header-hidden'); headerHidden = true; }
+      } else {
+        if (headerHidden) { header.classList.remove('header-hidden'); headerHidden = false; }
+      }
+      header.classList.toggle('header-scrolled', scrollY > 10);
+    }
+
+    if (stickyBar && !stickyBar.closest('.hidden-page')) {
+      if (scrollY > 400 && scrollY > lastScrollY) stickyBar.classList.add('bar-hidden');
+      else stickyBar.classList.remove('bar-hidden');
+    }
+
+    if (backToTop) backToTop.classList.toggle('visible', scrollY > 500);
+
+    if (mainImage) {
+      const rect = mainImage.getBoundingClientRect();
+      if (rect.bottom > 0 && rect.top < window.innerHeight) {
+        const offset = (window.innerHeight / 2 - (rect.top + rect.height / 2)) * 0.04;
+        mainImage.style.transform = `translateY(${Math.max(-15, Math.min(15, offset))}px) scale(1.03)`;
+      }
+    }
+
+    lastScrollY = scrollY;
+    ticking = false;
+  }
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) { window.requestAnimationFrame(updateScrollUI); ticking = true; }
+  }, { passive: true });
+
+  updateScrollUI();
+
+  // Scroll Reveal
+  const revealElements = document.querySelectorAll('.reveal-on-scroll');
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('revealed'), i * 80);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+    revealElements.forEach(el => observer.observe(el));
+  } else {
+    revealElements.forEach(el => el.classList.add('revealed'));
+  }
+
+  // Reveal لصفوف جدول المقاسات
+  const tableRows = document.querySelectorAll('#page-size tbody tr');
+  tableRows.forEach((tr, i) => {
+    tr.classList.add('reveal-on-scroll', 'reveal-scale');
+    tr.style.transitionDelay = (i * 60) + 'ms';
+  });
+  if ('IntersectionObserver' in window) {
+    const observer2 = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) { entry.target.classList.add('revealed'); observer2.unobserve(entry.target); }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    tableRows.forEach(tr => observer2.observe(tr));
+  }
+
+  // Reveal لبطاقات الخيارات
+  document.querySelectorAll('.option-card').forEach((card, i) => {
+    card.classList.add('reveal-on-scroll', 'reveal-scale');
+    card.style.transitionDelay = (i * 50) + 'ms';
+  });
+  if ('IntersectionObserver' in window) {
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) { entry.target.classList.add('revealed'); obs.unobserve(entry.target); }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.option-card').forEach(card => obs.observe(card));
+  }
+}
+
+/* ==================== Init ==================== */
+document.addEventListener('DOMContentLoaded', () => {
+  populateWilayas();
+  buildGallery();
+  initDragGallery();
+  updateSummary();
+  initDynamicScroll();
+});
+</script>
+</body>
+</html>
