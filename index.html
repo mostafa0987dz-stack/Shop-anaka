@@ -224,11 +224,17 @@ body { background-color: #f8f9fa; color: #1a1a1a; overscroll-behavior-y: none; s
         </div>
 
         <form id="orderForm" onsubmit="handleOrder(event)" class="space-y-4">
+          <!-- مصيدة العسل (Honeypot) لمكافحة الروبوتات -->
+          <div style="position: absolute; left: -9999px; top: -9999px;" aria-hidden="true">
+            <label for="website">Website</label>
+            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+          </div>
+
           <div>
             <label class="text-xs font-semibold text-gray-700 block mb-1.5">الاسم الكامل <span class="text-red-500">*</span></label>
             <div class="relative">
               <iconify-icon icon="solar:user-linear" class="input-icon"></iconify-icon>
-              <input type="text" required placeholder="أدخل اسمك الكامل" class="form-input pr-10">
+              <input type="text" name="name" required placeholder="أدخل اسمك الكامل" class="form-input pr-10">
             </div>
           </div>
 
@@ -236,7 +242,7 @@ body { background-color: #f8f9fa; color: #1a1a1a; overscroll-behavior-y: none; s
             <label class="text-xs font-semibold text-gray-700 block mb-1.5">رقم الهاتف (جزائري) <span class="text-red-500">*</span></label>
             <div class="relative">
               <iconify-icon icon="solar:phone-linear" class="input-icon"></iconify-icon>
-              <input type="tel" required placeholder="05XXXXXXXX" maxlength="10" pattern="0[5-7][0-9]{8}" class="form-input pr-10">
+              <input type="tel" name="phone" required placeholder="05XXXXXXXX" maxlength="10" pattern="0[5-7][0-9]{8}" class="form-input pr-10">
             </div>
             <p class="text-[10px] text-gray-400 mt-1 mr-1">مثال: 0550123456</p>
           </div>
@@ -256,7 +262,7 @@ body { background-color: #f8f9fa; color: #1a1a1a; overscroll-behavior-y: none; s
             </div>
           </div>
 
-          <!-- حقل البلدية اليدوي (يظهر عند اختيار "بلديات أخرى") -->
+          <!-- حقل البلدية اليدوي -->
           <div id="manualCityWrapper">
             <label class="text-xs font-semibold text-gray-700 block mb-1.5">اكتب اسم البلدية <span class="text-red-500">*</span></label>
             <div class="relative">
@@ -270,7 +276,7 @@ body { background-color: #f8f9fa; color: #1a1a1a; overscroll-behavior-y: none; s
             <label class="text-xs font-semibold text-gray-700 block mb-1.5">العنوان الكامل <span class="text-red-500">*</span></label>
             <div class="relative">
               <iconify-icon icon="solar:map-point-linear" class="input-icon-top"></iconify-icon>
-              <textarea required rows="2" placeholder="الشارع، الحي، رقم المنزل..." class="form-input pr-10 resize-none"></textarea>
+              <textarea name="address" required rows="2" placeholder="الشارع، الحي، رقم المنزل..." class="form-input pr-10 resize-none"></textarea>
             </div>
           </div>
 
@@ -289,7 +295,7 @@ body { background-color: #f8f9fa; color: #1a1a1a; overscroll-behavior-y: none; s
 
           <div>
             <label class="text-xs font-semibold text-gray-700 block mb-1.5">ملاحظات (اختياري)</label>
-            <textarea rows="2" placeholder="أي تفاصيل إضافية..." class="form-input resize-none"></textarea>
+            <textarea name="notes" rows="2" placeholder="أي تفاصيل إضافية..." class="form-input resize-none"></textarea>
           </div>
 
           <div class="space-y-2">
@@ -841,10 +847,11 @@ function updateSummary() {
   deliveryEl.textContent = `${deliveryPrice.toLocaleString()} دج`;
 }
 
-/* ==================== Order ==================== */
-function handleOrder(e) {
+/* ==================== Order (الربط مع Vercel والـ API الآمن) ==================== */
+async function handleOrder(e) {
   e.preventDefault();
 
+  // 1. التحقق من البلدية اليدوية
   const citySelect = document.getElementById('citySelect');
   const manualInput = document.getElementById('manualCityInput');
   if (citySelect.value === OTHER_CITIES_VALUE && !manualInput.value.trim()) {
@@ -854,6 +861,18 @@ function handleOrder(e) {
   }
   manualInput.classList.remove('border-red-400');
 
+  // 2. جمع البيانات من الحقول
+  const form = e.target;
+  const name = form.querySelector('[name="name"]').value.trim();
+  const phone = form.querySelector('[name="phone"]').value.trim();
+  const address = form.querySelector('[name="address"]').value.trim();
+  
+  // البلدية: إذا اختار "بلديات أخرى" نأخذ القيمة من الحقل اليدوي، وإلا نأخذها من القائمة
+  const commune = citySelect.value === OTHER_CITIES_VALUE 
+      ? manualInput.value.trim() 
+      : citySelect.value;
+
+  // 3. تجهيز زر الإرسال
   const btn = document.getElementById('confirmBtn');
   const originalContent = btn.innerHTML;
   btn.disabled = true;
@@ -861,34 +880,79 @@ function handleOrder(e) {
   btn.classList.remove('btn-shimmer');
   btn.classList.add('bg-[#149116]', 'opacity-80');
 
-  setTimeout(() => {
-    btn.innerHTML = '<iconify-icon icon="solar:check-circle-bold" class="text-xl"></iconify-icon><span>تم تأكيد الطلب!</span>';
-    btn.classList.remove('opacity-80');
-    btn.classList.add('bg-[#0f6b11]');
-    const toast = document.getElementById('successToast');
-    toast.classList.remove('opacity-0', 'pointer-events-none');
-    toast.classList.add('opacity-100');
+  // 4. تجهيز البيانات للإرسال
+  const payload = {
+    name: name,
+    phone: phone,
+    commune: commune,
+    address: address,
+    qty: currentQty,
+    total: (productConfig.basePrice * currentQty) + deliveryPrice,
+    product: "دشداشة بني بقبة صينية",
+    delivery: deliveryPrice,
+    notes: form.querySelector('[name="notes"]').value.trim(),
+    website: document.getElementById('website').value // مصيدة العسل
+  };
 
-    e.target.reset();
-    currentQty = 1;
-    updateQtyDisplay();
-    document.querySelectorAll('input[name="delivery"]')[0].checked = true;
-    document.querySelectorAll('.option-card').forEach((el, i) => {
-      if (i === 0) el.classList.add('selected'); else el.classList.remove('selected');
+  try {
+    // 5. الإرسال إلى Vercel API
+    const response = await fetch('/api/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
-    deliveryPrice = productConfig.homeDelivery;
-    updateSummary();
-    document.getElementById('manualCityWrapper').classList.remove('open');
 
-    setTimeout(() => {
+    const data = await response.json();
+
+    if (data.ok) {
+      // نجاح
+      btn.innerHTML = '<iconify-icon icon="solar:check-circle-bold" class="text-xl"></iconify-icon><span>تم تأكيد الطلب!</span>';
+      btn.classList.remove('opacity-80');
+      btn.classList.add('bg-[#0f6b11]');
+      
+      const toast = document.getElementById('successToast');
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      toast.classList.add('opacity-100');
+
+      // إعادة تعيين النموذج
+      e.target.reset();
+      currentQty = 1;
+      updateQtyDisplay();
+      document.querySelectorAll('input[name="delivery"]')[0].checked = true;
+      document.querySelectorAll('.option-card').forEach((el, i) => {
+        if (i === 0) el.classList.add('selected'); else el.classList.remove('selected');
+      });
+      deliveryPrice = productConfig.homeDelivery;
+      updateSummary();
+      document.getElementById('manualCityWrapper').classList.remove('open');
+      citySelect.innerHTML = '<option value="">اختر البلدية</option>';
+
+      // إعادة الزر لحالته بعد 3.5 ثانية
+      setTimeout(() => {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+        btn.classList.remove('bg-[#0f6b11]', 'bg-[#149116]');
+        btn.classList.add('btn-shimmer');
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 3500);
+
+    } else {
+      // خطأ من الخادم (مثلاً رقم هاتف غير صحيح)
+      alert('حدث خطأ: ' + (data.error || 'يرجى المحاولة مرة أخرى'));
       btn.innerHTML = originalContent;
       btn.disabled = false;
-      btn.classList.remove('bg-[#0f6b11]', 'bg-[#149116]');
+      btn.classList.remove('bg-[#149116]', 'opacity-80');
       btn.classList.add('btn-shimmer');
-      toast.classList.remove('opacity-100');
-      toast.classList.add('opacity-0', 'pointer-events-none');
-    }, 3500);
-  }, 2000);
+    }
+  } catch (error) {
+    // خطأ في الاتصال
+    alert('تعذر الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت.');
+    btn.innerHTML = originalContent;
+    btn.disabled = false;
+    btn.classList.remove('bg-[#149116]', 'opacity-80');
+    btn.classList.add('btn-shimmer');
+  }
 }
 
 /* ==================== Dynamic Scroll ==================== */
@@ -997,4 +1061,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 </body>
-</html>
+                </html>
